@@ -5,11 +5,11 @@ import { MdLocationOn } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { SEARCH_BOX, serachReducer } from "../../reducers/searchReducer";
 import { SearchContext } from "../../context/SearchContext";
+import { useSelector } from "react-redux";
 
 function Navbar() {
   const { state, dispatch } = useContext(SearchContext);
-
-  // console.log(state);
+  const { username, email } = useSelector((state) => state.user.userDetails);
 
   const searchTextMan = (e) => {
     dispatch({ type: "CHANGE", payload: e.target.value });
@@ -56,24 +56,29 @@ function Navbar() {
           <MdLocationOn className="text-yellow-600" />
           <span className="text-yellow-600 text-[17px]">Mumbai</span>
         </li>
-        <div className="flex items-center space-x-5 text-lg ">
-          <li>
-            <NavLink
-              to="/login"
-              className="border-2 border-yellow-600 px-3 pb-[3px] rounded-md text-white bg-yellow-600"
-            >
-              Login
-            </NavLink>
-          </li>
-          <li>
-            <NavLink
-              to="/signup"
-              className="border-2 border-yellow-600 px-3 pb-1 rounded-md text-white bg-yellow-600"
-            >
-              Sign up
-            </NavLink>
-          </li>
-        </div>
+        {email ? (
+          <div className="flex items-center space-x-5 text-lg ">
+            <li>
+              <NavLink
+                to="/my-account"
+                className="border-2 border-yellow-600 px-3 pb-[3px] rounded-md text-white bg-yellow-600"
+              >
+                My Account
+              </NavLink>
+            </li>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-5 text-lg ">
+            <li>
+              <NavLink
+                to="/login-reg"
+                className="border-2 border-yellow-600 px-3 pb-[3px] rounded-md text-white bg-yellow-600"
+              >
+                Login / Register
+              </NavLink>
+            </li>
+          </div>
+        )}
       </ul>
     </div>
   );

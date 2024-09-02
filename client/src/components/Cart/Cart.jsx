@@ -5,12 +5,30 @@ import { useSelector } from "react-redux";
 import { FaShoppingCart } from "react-icons/fa";
 import { useEffect } from "react"; // named export
 import CartItemCard from "../CartItemCard/CartItemCart";
+import { useDispatch } from "react-redux";
+import { setToCart } from "../../slices/CartSlice";
+import { fetchMyCartProds } from "../../services/Apis";
 
 const Cart = () => {
   const [cartActive, setCartActive] = useState(false);
   const { cart } = useSelector((state) => state.cart);
+  const { email } = useSelector((state) => state.user.userDetails);
 
-  console.log("This is my cart" + cart);
+  const dispatch = useDispatch();
+
+  const fetchCartData = async () => {
+    const res = await fetchMyCartProds();
+    if (res.status === 200) {
+      if (res.data.cartProducts) {
+        dispatch(setToCart({ cartProducts: res.data.cartProducts }));
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchCartData();
+  }, []);
+  // console.log("This is my cart" + cart);
 
   const [cartTotal, setCartTotal] = useState(0.0);
   const [noOfItems, setNoOfItems] = useState(0);
@@ -54,21 +72,27 @@ const Cart = () => {
             className="border-2  border-gray-600 font-bold p-[1px] text-xl rounded-md hover:text-red-400 hover:border-red-300 cursor-pointer"
           />
         </div>
-        {cart.length > 0 ? (
-          cart.map((item) => {
-            return (
-              <CartItemCard
-                key={item.id}
-                id={item.id}
-                title={item.title}
-                price={item.price}
-                qty={item.qty}
-                img={item.img}
-              />
-            );
-          })
+        {email ? (
+          cart.length > 0 ? (
+            cart.map((item) => {
+              return (
+                <CartItemCard
+                  key={item.id}
+                  id={item.id}
+                  title={item.title}
+                  price={item.price}
+                  qty={item.qty}
+                  img={item.img}
+                />
+              );
+            })
+          ) : (
+            <h1 className="text-center text-black/70">Your cart is Empty</h1>
+          )
         ) : (
-          <h1 className="text-center text-black/70">Your cart is Empty</h1>
+          <h1 className="text-center text-black/70">
+            Please login or register!!
+          </h1>
         )}
         <div className="p-2 bg-white absolute flex justify-center bottom-4 w-full flex-col right-[0.10px]">
           <div className="ml-2">
@@ -82,7 +106,13 @@ const Cart = () => {
 
           <hr className=" w-[90vw] lg:w-[84%] m-2 " />
           <div className="flex justify-center ">
-            <button className="bg-green-600   font-bold px-3 py-2 text-white rounded-lg w-[98%]">
+            <button
+              className={` ${
+                email ? "bg-green-600" : "bg-green-300 cursor-not-allowed"
+              } font-bold px-3 py-2 text-white rounded-lg w-[98%] ${
+                cart.length === 0 && "bg-green-300 cursor-not-allowed"
+              }`}
+            >
               Checkout
             </button>
           </div>

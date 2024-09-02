@@ -8,6 +8,15 @@ import credit_card from "../../assets/images/credit-card.png";
 import "./Hero.css";
 import { NavLink } from "react-router-dom";
 import tomatoes from "../../assets/images/tomatoes.jpg";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { assignUserDetails } from "../../slices/UserSlice";
+import { useEffect } from "react";
+import { fetchMyCartProds, validateToken } from "../../services/Apis";
+import { useSelector } from "react-redux";
+import { setToCart } from "../../slices/CartSlice";
+import { useState } from "react";
+import { getAllProducts } from "../../services/Apis";
 
 const prodArray = [
   {
@@ -32,6 +41,62 @@ const prodArray = [
 ];
 
 const Home = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const token = localStorage.getItem("token");
+  const [mainArr, setMainArr] = useState([]);
+  const fetchProducts = async () => {
+    const res = await getAllProducts();
+    console.log(res);
+    setMainArr(res.data);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const checkTokenStatus = async () => {
+    const res = await validateToken();
+    if (res.status === 200) {
+      dispatch(
+        assignUserDetails({
+          id: res.data.id,
+          username: res.data.username,
+          email: res.data.email,
+        })
+      );
+    } else {
+      dispatch(
+        assignUserDetails({
+          username: "",
+          email: "",
+        })
+      );
+      // navigate("/login-reg");
+    }
+  };
+
+  const fetchCartData = async () => {
+    const res = await fetchMyCartProds();
+    if (res.status === 200) {
+      if (res.data.cartProducts) {
+        dispatch(setToCart({ cartProducts: res.data.cartProducts }));
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      checkTokenStatus();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      fetchCartData();
+    }
+  }, []);
+
   return (
     <div>
       <div className="border h-[86vh] flex justify-center items-center hero">
@@ -85,14 +150,19 @@ const Home = () => {
         <h1 className="text-[25px] font-bold">New arrivals in your area</h1>
 
         <div className="flex">
-          {prodArray.map((item) => (
+          {mainArr.map((item) => (
             <ItemCard
               id={item.id}
-              title={item.title}
-              price={item.price}
-              rating={item.farmerRatings}
               img={item.img}
+              price={item.price}
               unit={item.unit}
+              title={item.title}
+              key={item.id}
+              qty={item.qty}
+              farmerId={item.farmerId}
+              category={item.category}
+              farmerInfo={item.farmerInfo}
+              farmerRatings={item.farmerRatings}
             />
           ))}
         </div>

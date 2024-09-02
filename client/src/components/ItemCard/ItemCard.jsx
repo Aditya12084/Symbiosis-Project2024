@@ -4,8 +4,27 @@ import { IoStarHalf } from "react-icons/io5";
 import tomatoes from "../../assets/images/tomatoes.jpg";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../slices/CartSlice";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { addToCartDb } from "../../services/Apis";
 
-function ItemCard({ id, title, price, farmerRatings, img, unit }) {
+function ItemCard({
+  id,
+  farmerId,
+  category,
+  title,
+  price,
+  farmerRatings,
+  img,
+  unit,
+  farmerInfo,
+}) {
+  const { username, email, userId } = useSelector(
+    (state) => state.user.userDetails
+  );
+
+  const navigate = useNavigate();
+
   const [qty, setQty] = useState(1);
   const dispatch = useDispatch();
 
@@ -16,7 +35,7 @@ function ItemCard({ id, title, price, farmerRatings, img, unit }) {
   };
 
   return (
-    <div className="border-2 ml-5 p-3 space-y-4 flex flex-col rounded-lg">
+    <div className="border-2 ml-5 p-3 space-y-3 flex flex-col rounded-lg mt-4">
       <div>
         <img
           src={img}
@@ -26,15 +45,10 @@ function ItemCard({ id, title, price, farmerRatings, img, unit }) {
       </div>
 
       <span className="font-semibold text-[18px]">{title}</span>
+
       <div className="flex items-center space-x-3">
-        <span>F-ratings:</span>
-        <div className="flex space-x-1 text-yellow-400">
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStar />
-          <IoStarHalf />
-        </div>
+        <span className="">Farmer: {farmerInfo}</span>
+        <span>({farmerRatings})</span>
       </div>
 
       <div>
@@ -57,11 +71,28 @@ function ItemCard({ id, title, price, farmerRatings, img, unit }) {
           </button>
         </div>
         <button
-          onClick={() =>
-            dispatch(
-              addToCart({ id, title, price, farmerRatings, img, qty: qty })
-            )
-          }
+          onClick={async () => {
+            if (email) {
+              const res = await addToCartDb({
+                title: title,
+                productId: id,
+                farmerId: farmerId,
+                customerId: userId,
+                price: price,
+                unit: unit,
+                img: img,
+                category: category,
+                qty: qty,
+              });
+
+              console.log(res);
+              dispatch(
+                addToCart({ id, title, price, farmerRatings, img, qty: qty })
+              );
+            } else {
+              navigate("/login-reg");
+            }
+          }}
           className="border py-1 px-3 rounded-md bg-green-700 text-white font-bold"
         >
           ADD TO CART
