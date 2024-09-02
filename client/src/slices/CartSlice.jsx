@@ -24,21 +24,6 @@ const CartSlice = createSlice({
     removeFromCart: (state, action) => {
       state.cart = state.cart.filter((item) => item.id != action.payload.id);
     },
-    incItem: (state, action) => {
-      state.cart = state.cart.map((item) =>
-        item.id === action.payload.id ? { ...item, qty: item.qty + 1 } : item
-      );
-    },
-    decItem: (state, action) => {
-      state.cart = state.cart.map((item) =>
-        item.id === action.payload.id
-          ? {
-              ...item,
-              qty: item.qty > 1 ? item.qty - 1 : 1,
-            }
-          : item
-      );
-    },
   },
 });
 
